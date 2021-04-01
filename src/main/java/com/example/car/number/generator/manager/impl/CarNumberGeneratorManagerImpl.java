@@ -25,8 +25,6 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
     private static final int MAX_NUMBER = 999;
     private static final int MAX_QUANTITY_NUMBERS = (int) Math.pow(LETTERS.size(), 3) * MAX_NUMBER;
     private static final Random RANDOMIZER = new Random();
-    private static final String TYPE_GETTING_SEQUENCE = "SEQUENCE";
-    private static final String TYPE_GETTING_RANDOM = "RANDOM";
 
     private boolean isInitialized;
     private long countNumbers;
@@ -34,10 +32,10 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
     private int positionSecondLiteral;
     private int positionThirdLiteral;
     private int serialNumber;
-    private final StringBuilder seriesBuilder = new StringBuilder();
 
     @Override
     public String generateNextNumber() {
+        StringBuilder seriesBuilder = new StringBuilder();
         if (!isInitialized) {
             initPosition();
         }
@@ -53,7 +51,7 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
                     .append(LETTERS.get(positionSecondLiteral))
                     .append(LETTERS.get(positionThirdLiteral));
 
-            CarNumber carNumber = doBuilderCarNumber(serialNumber, TYPE_GETTING_SEQUENCE);
+            CarNumber carNumber = doBuilderCarNumber(serialNumber,seriesBuilder.toString(), TypeGetting.SEQUENCE.getValue());
             seriesBuilder.setLength(0);
 
             if (isSave(carNumber)) {
@@ -64,7 +62,7 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
 
     @Override
     public String generateRandomNumber() {
-
+        StringBuilder seriesBuilder = new StringBuilder();
         while (true) {
             if (countNumbers == MAX_QUANTITY_NUMBERS) {
                 return "Номера закончились";
@@ -76,7 +74,7 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
 
             int serialNumberRandom = RANDOMIZER.nextInt(MAX_NUMBER) + 1;
 
-            CarNumber carNumber = doBuilderCarNumber(serialNumberRandom, TYPE_GETTING_RANDOM);
+            CarNumber carNumber = doBuilderCarNumber(serialNumberRandom, seriesBuilder.toString(), TypeGetting.RANDOM.getValue());
             seriesBuilder.setLength(0);
 
             if (isSave(carNumber)) {
@@ -126,7 +124,8 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
     }
 
     private void initPosition() {
-        CarNumber carNumber = carNumberRepository.findFirstByTypeGettingOrderBySeriesDescNumberDesc(TYPE_GETTING_SEQUENCE);
+        CarNumber carNumber = carNumberRepository
+                .findFirstByTypeGettingOrderBySeriesDescNumberDesc(TypeGetting.SEQUENCE.getValue());
         if (carNumber == null) {
             return;
         }
@@ -139,15 +138,30 @@ public class CarNumberGeneratorManagerImpl implements CarNumberGeneratorManager 
         isInitialized = true;
     }
 
-    private CarNumber doBuilderCarNumber(int doNumber, String typeGetting) {
+    private CarNumber doBuilderCarNumber(int doNumber, String series, String typeGetting) {
         CarNumber carNumber = new CarNumber();
-        carNumber.setSeries(seriesBuilder.toString());
+        carNumber.setSeries(series);
         carNumber.setNumber(doNumber);
         carNumber.setRegion(REGION);
         carNumber.setCountry(COUNTRY);
         carNumber.setTypeGetting(typeGetting);
 
         return carNumber;
+    }
+
+    public enum TypeGetting {
+        SEQUENCE("sequence"),
+        RANDOM("random");
+
+        private final String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        TypeGetting(String value) {
+            this.value = value;
+        }
     }
 
 }

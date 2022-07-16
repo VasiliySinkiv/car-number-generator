@@ -1,5 +1,5 @@
 package com.example.car.number.generator.controller;
 
 public class NewController {
-    private final int count = 1;
+    private final int count = 2;
 }

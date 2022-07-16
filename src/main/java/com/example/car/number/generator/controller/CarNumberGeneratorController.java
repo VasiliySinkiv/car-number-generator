@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/number")
 public class CarNumberGeneratorController {
 
+
     @Autowired
     private CarNumberGeneratorService numberGeneratorService;
 
